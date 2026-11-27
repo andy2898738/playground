@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>遊戲世界大樓 — 雲端金幣與外觀大廳</title>
+  <style>
+    :root {
+      --bg-sky: linear-gradient(180deg, #090d1f 0%, #141c3b 55%, #1f2954 100%);
+      --panel-bg: rgba(18, 25, 52, 0.88);
+      --panel-border: rgba(255, 255, 255, 0.14);
+      --text-main: #f5f7ff;
+      --text-sub: #a8b4d8;
+      --accent: #38bdf8;
+      --gold: #fbbf24;
+      --wall-bg: #1b2444;
+      --window-lit: #fde68a;
+      --window-dim: #2b3864;
+    }
+
+    body.day-mode {
+      --bg-sky: linear-gradient(180deg, #60a5fa 0%, #bae6fd 65%, #e0f2fe 100%);
+      --panel-bg: rgba(255, 255, 255, 0.9);
+      --panel-border: rgba(15, 23, 42, 0.12);
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --accent: #0284c7;
+      --gold: #d97706;
+      --wall-bg: #cbd5e1;
+      --window-lit: #fef08a;
+      --window-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Noto Sans TC", "PingFang TC", system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-sky);
+      color: var(--text-main);
+      transition: background 0.4s ease, color 0.3s ease;
+      padding: 20px;
+    }
+
+    .topbar {
+      max-width: 1160px;
+      margin: 0 auto 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 14px 20px;
+    }
+
+    .brand h1 {
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+    }
+
+    .brand p {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.14);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-pill.offline {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .player-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 12px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 2px solid var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    .player-badge.frame-gold {
+      border-color: #fbbf24;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.45);
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(245, 158, 11, 0.08));
+    }
+
+    .player-badge.frame-neon {
+      border-color: #e879f9;
+      box-shadow: 0 0 14px rgba(232, 121, 249, 0.45);
+      background: linear-gradient(135deg, rgba(232, 121, 249, 0.22), rgba(56, 189, 248, 0.12));
+    }
+
+    .coin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 12px;
+      background: rgba(251, 191, 36, 0.16);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      color: var(--gold);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .coin-badge.bump {
+      transform: scale(1.12);
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.15s ease;
+    }
+
+    button:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(148, 163, 184, 0.22);
+      color: var(--text-main);
+      border: 1px solid var(--panel-border);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      color: #0f172a;
+    }
+
+    .main-grid {
+      max-width: 1160px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 大樓與景觀電梯區 */
+    .tower-wrapper {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .tower-wrapper.festive {
+      box-shadow: 0 0 28px rgba(251, 191, 36, 0.25);
+      border-color: rgba(251, 191, 36, 0.5);
+    }
+
+    .tower-roof {
+      text-align: center;
+      background: linear-gradient(90deg, #334155, #1e293b);
+      color: #f8fafc;
+      padding: 10px;
+      border-radius: 14px 14px 4px 4px;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+
+    .tower-body {
+      display: grid;
+      grid-template-columns: 1fr 78px;
+      gap: 10px;
+      background: var(--wall-bg);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .floors-column {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+    }
+
+    .floor-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    body.day-mode .floor-row {
+      background: rgba(255, 255, 255, 0.65);
+      border-color: rgba(15, 23, 42, 0.1);
+    }
+
+    .floor-row.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+      transform: translateX(4px);
+    }
+
+    .floor-row.floor2-gold {
+      border-color: #fbbf24;
+      background: linear-gradient(90deg, rgba(251, 191, 36, 0.22), rgba(15, 23, 42, 0.35));
+    }
+
+    .floor-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .floor-tag {
+      font-weight: 800;
+      font-size: 0.95rem;
+      min-width: 36px;
+      color: var(--accent);
+    }
+
+    .floor-title {
+      font-weight: 700;
+      font-size: 0.98rem;
+    }
+
+    .floor-sub {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .windows {
+      display: flex;
+      gap: 5px;
+    }
+
+    .win {
+      width: 14px;
+      height: 20px;
+      border-radius: 3px;
+      background: var(--window-dim);
+    }
+
+    .win.lit {
+      background: var(--window-lit);
+      box-shadow: 0 0 8px rgba(253, 230, 138, 0.5);
+    }
+
+    /* 電梯井 */
+    .elevator-shaft {
+      position: relative;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      min-height: 360px;
+      padding: 8px;
+    }
+
+    .elevator-car {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      height: 54px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.45);
+      transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* 右側資訊面板 */
+    .inspector {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .economy-box {
+      background: rgba(15, 23, 42, 0.25);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    body.day-mode .economy-box {
+      background: rgba(241, 245, 249, 0.85);
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* 彈窗 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 500px;
+      background: #131c38;
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 18px;
+      padding: 22px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 10px;
+    }
+
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.85rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(15, 23, 42, 0.6);
+      color: #fff;
+      margin: 10px 0 14px;
+    }
+
+    /* 電梯過場動畫 */
+    .elevator-transition {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 13, 31, 0.95);
+      color: #fff;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 100;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .elevator-transition.active {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>🏢 遊戲世界大樓</h1>
+      <p>跨樓層小遊戲大廳 · 賺金幣、付入場、挑外觀</p>
+    </div>
+
+    <div class="top-actions">
+      <span id="cloudStatus" class="status-pill">● 雲端連線中</span>
+
+      <button id="playerBadge" class="player-badge" onclick="openPlayerModal()" title="點擊切換玩家">
+        <span>👤 <span id="playerNameLabel">andy</span></span>
+      </button>
+
+      <div id="coinBadge" class="coin-badge" onclick="openWalletModal()" title="查看金幣明細">
+        <span>🪙 <span id="coinBalance">500</span></span>
+      </div>
+
+      <button class="btn-gold" onclick="openShopModal()">🎨 外觀商店</button>
+      <button class="btn-secondary" onclick="toggleDayNight()">🌓 日夜切換</button>
+    </div>
+  </header>
+
+  <main class="main-grid">
+    <section id="towerWrapper" class="tower-wrapper">
+      <div class="tower-roof">▲ ROOFTOP · 遊戲大樓觀景台 ▲</div>
+      <div class="tower-body">
+        <div id="floorsColumn" class="floors-column"></div>
+        <div class="elevator-shaft">
+          <div id="elevatorCar" class="elevator-car">
+            <span>🛗</span>
+            <span id="elevatorFloorText">2F</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="inspector">
+      <div>
+        <div id="detailFloor" style="font-weight: 800; color: var(--accent); font-size: 0.95rem;">2F</div>
+        <h2 id="detailTitle" style="font-size: 1.5rem; margin-top: 2px;">拉密</h2>
+      </div>
+
+      <div id="detailTags" class="tags"></div>
+      <p id="detailDesc" style="line-height: 1.65; color: var(--text-sub);"></p>
+
+      <div id="detailEconomy" class="economy-box"></div>
+
+      <div id="detailActions" class="action-row"></div>
+    </aside>
+  </main>
+
+  <!-- 電梯前往過場 -->
+  <div id="elevatorOverlay" class="elevator-transition">
+    <div>🛗 電梯前往 <span id="targetFloorLabel">2F</span> 中...</div>
+    <div style="font-size: 0.9rem; color: #94a3b8;">正在準備遊戲畫面</div>
+  </div>
+
+  <!-- 切換玩家彈窗 -->
+  <div id="playerModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>切換／建立玩家代號</h3>
+        <button class="btn-secondary" onclick="closeModal('playerModal')">✕</button>
+      </div>
+      <p style="font-size: 0.88rem; color: #cbd5e1;">輸入你的玩家代號（英數或暱稱），金幣與外觀會同步到你的 Firebase 帳號：</p>
+      <input id="playerInput" type="text" placeholder="例如：andy" />
+      <div class="action-row">
+        <button class="btn-primary" onclick="savePlayerId()">確認切換</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 外觀商店彈窗 -->
+  <div id="shopModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎨 大廳外觀商店</h3>
+        <button class="btn-secondary" onclick="closeModal('shopModal')">✕</button>
+      </div>
+      <p style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 12px;">目前持有：🪙 <strong id="shopCoins">500</strong></p>
+      <div id="shopList"></div>
+    </div>
+  </div>
+
+  <!-- 金幣明細彈窗 -->
+  <div id="walletModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🪙 金幣金庫與收支明細</h3>
+        <button class="btn-secondary" onclick="closeModal('walletModal')">✕</button>
+      </div>
+      <p style="margin-bottom: 12px;">目前餘額：<strong>🪙 <span id="walletCoins">500</span></strong></p>
+      <div id="logList"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getFirestore, doc, setDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfd5fw0jS1tDwpdUHwOUdxDKyXtHtG2fw",
+      authDomain: "playground-e67f0.firebaseapp.com",
+      projectId: "playground-e67f0",
+      storageBucket: "playground-e67f0.firebasestorage.app",
+      messagingSenderId: "135749339497",
+      appId: "1:135749339497:web:5aeea99672c7ab30df55f8"
+    };
+
+    const FLOORS = [
+      {
+        id: "1F",
+        name: "大廳接待處",
+        url: null,
+        open: true,
+        entryFee: 0,
+        rewardHint: "每日簽到 +100 幣",
+        tags: ["#大廳櫃檯", "#每日補給", "#新手起點"],
+        desc: "遊戲大樓的一樓接待中心，可以在這裡領取每日金幣補給、查看收支紀錄，或前往各樓層挑戰小遊戲。"
+      },
+      {
+        id: "2F",
+        name: "拉密",
+        url: "https://andy2898738.github.io/Rummikub/",
+        open: true,
+        entryFee: 50,
+        rewardHint: "獲勝預計 +150 幣",
+        tags: ["#休閒桌遊", "#邏輯推理", "#輕鬆動腦"],
+        desc: "在二樓的桌遊小館來場數字對決，動動腦筋找出最佳出牌組合。"
+      },
+      {
+        id: "3F",
+        name: "籌備中樓層",
+        url: null,
+        open: false,
+        entryFee: 0,
+        rewardHint: "尚未開張",
+        tags: ["#施工中", "#敬請期待"],
+        desc: "三樓正在裝修中！未來只要提供新遊戲網址，就能直接點亮這一層。"
+      },
+      {
+        id: "4F",
+        name: "籌備中樓層",
+        url: null,
+        open: false,
+        entryFee: 0,
+        rewardHint: "尚未開張",
+        tags: ["#施工中", "#敬請期待"],
+        desc: "四樓預留給下一款小遊戲，準備好賺取更多金幣了嗎？"
+      }
+    ];
+
+    const SHOP_ITEMS = [
+      { id: "frame_gold", name: "金色榮耀名牌框", price: 150, type: "frame", cssClass: "frame-gold", desc: "讓你的頂部玩家名牌閃耀金光。" },
+      { id: "frame_neon", name: "霓虹電玩名牌框", price: 250, type: "frame", cssClass: "frame-neon", desc: "充滿電玩城氛圍的紫粉霓虹邊框。" },
+      { id: "floor2_gold", name: "2F 桌遊館金邊燈牌", price: 200, type: "floor2", desc: "為二樓《拉密》加上專屬金色邊框。" },
+      { id: "festive_tower", name: "大樓慶典燈光特效", price: 300, type: "tower", desc: "讓整棟遊戲大樓外牆散發暖金光暈。" }
+    ];
+
+    let currentFloorId = "2F";
+    let playerId = (localStorage.getItem("gameTower_playerId") || "andy").trim().toLowerCase();
+    let playerData = {
+      nickname: playerId,
+      coins: 500,
+      equippedFrame: "frame_default",
+      ownedItems: ["frame_default"],
+      logs: [{ floor: "1F", reason: "歡迎來到遊戲世界大樓", delta: 500, time: "初始" }]
+    };
+
+    let unsubscribeDoc = null;
+    let db = null;
+    let isOfflineMode = false;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    } catch (err) {
+      isOfflineMode = true;
+      updateCloudStatus(false);
+    }
+
+    function updateCloudStatus(online) {
+      const el = document.getElementById("cloudStatus");
+      if (online) {
+        el.textContent = "● 已連線雲端";
+        el.classList.remove("offline");
+      } else {
+        el.textContent = "● 本機備援模式";
+        el.classList.add("offline");
+      }
+    }
+
+    function nowTime() {
+      const d = new Date();
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function loadLocalFallback() {
+      const saved = localStorage.getItem(`tower_player_${playerId}`);
+      if (saved) {
+        playerData = JSON.parse(saved);
+      } else {
+        playerData = {
+          nickname: playerId,
+          coins: 500,
+          equippedFrame: "frame_default",
+          ownedItems: ["frame_default"],
+          logs: [{ floor: "1F", reason: "新玩家初始金幣", delta: 500, time: nowTime() }]
+        };
+      }
+      renderAll();
+    }
+
+    function saveLocalFallback() {
+      localStorage.setItem(`tower_player_${playerId}`, JSON.stringify(playerData));
+    }
+
+    function subscribePlayer() {
+      document.getElementById("playerNameLabel").textContent = playerId;
+      if (unsubscribeDoc) {
+        unsubscribeDoc();
+        unsubscribeDoc = null;
+      }
+      if (!db || isOfflineMode) {
+        loadLocalFallback();
+        return;
+      }
+
+      const ref = doc(db, "players", playerId);
+      unsubscribeDoc = onSnapshot(ref, async (snap) => {
+        updateCloudStatus(true);
+        if (snap.exists()) {
+          const prevCoins = playerData.coins;
+          playerData = {
+            nickname: playerId,
+            coins: 0,
+            equippedFrame: "frame_default",
+            ownedItems: ["frame_default"],
+            logs: [],
+            ...snap.data()
+          };
+          renderAll();
+          if (playerData.coins !== prevCoins) {
+            bumpCoins();
+          }
+        } else {
+          const initial = {
+            nickname: playerId,
+            coins: 500,
+            equippedFrame: "frame_default",
+            ownedItems: ["frame_default"],
+            logs: [{ floor: "1F", reason: "建立雲端玩家帳號", delta: 500, time: nowTime() }]
+          };
+          await setDoc(ref, initial);
+        }
+      }, () => {
+        isOfflineMode = true;
+        updateCloudStatus(false);
+        loadLocalFallback();
+      });
+    }
+
+    async function mutateCoins(delta, floorId, reason) {
+      if (playerData.coins + delta < 0) {
+        alert("金幣不足！先到 1F 領取每日簽到補給，或到其他樓層賺取金幣吧。");
+        return false;
+      }
+      const newLog = { floor: floorId, reason, delta, time: nowTime() };
+      const updatedLogs = [newLog, ...(playerData.logs || [])].slice(0, 30);
+
+      if (!db || isOfflineMode) {
+        playerData.coins += delta;
+        playerData.logs = updatedLogs;
+        saveLocalFallback();
+        renderAll();
+        bumpCoins();
+        return true;
+      }
+
+      const ref = doc(db, "players", playerId);
+      await updateDoc(ref, {
+        coins: increment(delta),
+        logs: updatedLogs
+      });
+      return true;
+    }
+
+    window.claimDailyBonus = async function () {
+      await mutateCoins(100, "1F", "每日簽到領取");
+    };
+
+    window.enterFloor = async function (floorId) {
+      const floor = FLOORS.find((f) => f.id === floorId);
+      if (!floor || !floor.open || !floor.url) return;
+
+      if (floor.entryFee > 0) {
+        const ok = await mutateCoins(-floor.entryFee, floor.id, `${floor.name}入場費`);
+        if (!ok) return;
+      }
+
+      const overlay = document.getElementById("elevatorOverlay");
+      document.getElementById("targetFloorLabel").textContent = floor.id;
+      overlay.classList.add("active");
+
+      const targetUrl = new URL(floor.url);
+      targetUrl.searchParams.set("player", playerId);
+      targetUrl.searchParams.set("floor", floor.id);
+
+      setTimeout(() => {
+        window.location.href = targetUrl.toString();
+      }, 750);
+    };
+
+    window.buyOrEquip = async function (itemId) {
+      const item = SHOP_ITEMS.find((i) => i.id === itemId);
+      if (!item) return;
+
+      const owned = (playerData.ownedItems || []).includes(item.id);
+      if (!owned) {
+        const ok = await mutateCoins(-item.price, "1F", `購買外觀：${item.name}`);
+        if (!ok) return;
+        const nextOwned = [...new Set([...(playerData.ownedItems || []), item.id])];
+        if (!db || isOfflineMode) {
+          playerData.ownedItems = nextOwned;
+          saveLocalFallback();
+          renderAll();
+        } else {
+          await updateDoc(doc(db, "players", playerId), { ownedItems: nextOwned });
+        }
+      }
+
+      if (item.type === "frame") {
+        if (!db || isOfflineMode) {
+          playerData.equippedFrame = item.id;
+          saveLocalFallback();
+          renderAll();
+        } else {
+          await updateDoc(doc(db, "players", playerId), { equippedFrame: item.id });
+        }
+      } else if (item.type === "floor2") {
+        const nextOwned = [...new Set([...(playerData.ownedItems || []), "floor2_gold"])];
+        if (!db || isOfflineMode) {
+          playerData.ownedItems = nextOwned;
+          saveLocalFallback();
+          renderAll();
+        } else {
+          await updateDoc(doc(db, "players", playerId), { ownedItems: nextOwned });
+        }
+      } else if (item.type === "tower") {
+        const nextOwned = [...new Set([...(playerData.ownedItems || []), "festive_tower"])];
+        if (!db || isOfflineMode) {
+          playerData.ownedItems = nextOwned;
+          saveLocalFallback();
+          renderAll();
+        } else {
+          await updateDoc(doc(db, "players", playerId), { ownedItems: nextOwned });
+        }
+      }
+    };
+
+    function bumpCoins() {
+      const el = document.getElementById("coinBadge");
+      el.classList.add("bump");
+      setTimeout(() => el.classList.remove("bump"), 250);
+    }
+
+    function renderTower() {
+      const col = document.getElementById("floorsColumn");
+      col.innerHTML = "";
+      const hasFloor2Gold = (playerData.ownedItems || []).includes("floor2_gold");
+      const hasFestive = (playerData.ownedItems || []).includes("festive_tower");
+
+      document.getElementById("towerWrapper").classList.toggle("festive", hasFestive);
+
+      FLOORS.forEach((f) => {
+        const row = document.createElement("div");
+        row.className = "floor-row";
+        if (f.id === currentFloorId) row.classList.add("active");
+        if (f.id === "2F" && hasFloor2Gold) row.classList.add("floor2-gold");
+
+        row.onclick = () => {
+          currentFloorId = f.id;
+          renderTower();
+          renderInspector();
+          moveElevator(f.id);
+        };
+
+        row.innerHTML = `
+          <div class="floor-left">
+            <span class="floor-tag">${f.id}</span>
+            <div>
+              <div class="floor-title">${f.name}</div>
+              <div class="floor-sub">${f.open ? (f.entryFee > 0 ? `入場 ${f.entryFee} 幣 · ${f.rewardHint}` : f.rewardHint) : "尚未開張"}</div>
+            </div>
+          </div>
+          <div class="windows">
+            <span class="win ${f.open ? "lit" : ""}"></span>
+            <span class="win ${f.open ? "lit" : ""}"></span>
+          </div>
+        `;
+        col.appendChild(row);
+      });
+
+      moveElevator(currentFloorId);
+    }
+
+    function moveElevator(floorId) {
+      const idx = FLOORS.findIndex((f) => f.id === floorId);
+      const car = document.getElementById("elevatorCar");
+      document.getElementById("elevatorFloorText").textContent = floorId;
+      const positions = [292, 200, 108, 16];
+      car.style.top = `${positions[idx] ?? 200}px`;
+    }
+
+    function renderInspector() {
+      const floor = FLOORS.find((f) => f.id === currentFloorId) || FLOORS[1];
+      document.getElementById("detailFloor").textContent = floor.id;
+      document.getElementById("detailTitle").textContent = floor.name;
+      document.getElementById("detailDesc").textContent = floor.desc;
+
+      const tagsEl = document.getElementById("detailTags");
+      tagsEl.innerHTML = floor.tags.map((t) => `<span class="tag">${t}</span>`).join("");
+
+      const ecoEl = document.getElementById("detailEconomy");
+      if (!floor.open) {
+        ecoEl.innerHTML = "此樓層目前尚未開放，未來新增小遊戲時會在此顯示入場費與獎勵。";
+      } else if (floor.id === "1F") {
+        ecoEl.innerHTML = "<strong>大廳補給：</strong>每天可在這裡領取 100 遊戲幣，也能打開外觀商店打扮你的名牌與大樓。";
+      } else {
+        ecoEl.innerHTML = `<strong>入場費用：</strong>${floor.entryFee} 幣<br/><strong>獎勵機制：</strong>${floor.rewardHint}`;
+      }
+
+      const actionsEl = document.getElementById("detailActions");
+      actionsEl.innerHTML = "";
+
+      if (floor.id === "1F") {
+        const btn = document.createElement("button");
+        btn.className = "btn-gold";
+        btn.textContent = "🎁 領取簽
