@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg-sky: linear-gradient(180deg, #090d1f 0%, #141c3b 55%, #1f2954 100%);
-      --panel-bg: rgba(18, 25, 52, 0.88);
+      --panel-bg: rgba(18, 25, 52, 0.9);
       --panel-border: rgba(255, 255, 255, 0.14);
       --text-main: #f5f7ff;
       --text-sub: #a8b4d8;
@@ -20,7 +20,7 @@
 
     body.day-mode {
       --bg-sky: linear-gradient(180deg, #60a5fa 0%, #bae6fd 65%, #e0f2fe 100%);
-      --panel-bg: rgba(255, 255, 255, 0.9);
+      --panel-bg: rgba(255, 255, 255, 0.92);
       --panel-border: rgba(15, 23, 42, 0.12);
       --text-main: #0f172a;
       --text-sub: #475569;
@@ -38,57 +38,71 @@
       font-family: "Noto Sans TC", "PingFang TC", system-ui, -apple-system, sans-serif;
     }
 
+    html {
+      font-size: clamp(14px, 0.9vw + 10px, 17px);
+    }
+
     body {
-      min-height: 100vh;
+      min-height: 100dvh;
       background: var(--bg-sky);
       color: var(--text-main);
       transition: background 0.4s ease, color 0.3s ease;
-      padding: 20px;
+      padding: clamp(10px, 2vw, 24px);
+      overflow-x: hidden;
     }
 
     .topbar {
-      max-width: 1160px;
-      margin: 0 auto 20px;
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto clamp(12px, 2vw, 20px);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px 14px;
       background: var(--panel-bg);
       border: 1px solid var(--panel-border);
       backdrop-filter: blur(12px);
       border-radius: 16px;
-      padding: 14px 20px;
+      padding: clamp(10px, 1.5vw, 16px) clamp(14px, 2vw, 22px);
+    }
+
+    .brand {
+      min-width: 0;
+      flex: 1 1 220px;
     }
 
     .brand h1 {
-      font-size: 1.35rem;
+      font-size: clamp(1.1rem, 1.5vw, 1.4rem);
       letter-spacing: 0.04em;
+      line-height: 1.25;
     }
 
     .brand p {
-      font-size: 0.85rem;
+      font-size: clamp(0.78rem, 0.95vw, 0.88rem);
       color: var(--text-sub);
-      margin-top: 2px;
+      margin-top: 3px;
     }
 
     .top-actions {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      max-width: 100%;
     }
 
     .status-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       padding: 6px 10px;
       border-radius: 999px;
       background: rgba(16, 185, 129, 0.14);
       color: #10b981;
       border: 1px solid rgba(16, 185, 129, 0.3);
+      white-space: nowrap;
     }
 
     .status-pill.offline {
@@ -100,15 +114,22 @@
     .player-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 7px 14px;
+      gap: 6px;
+      padding: 6px 12px;
       border-radius: 12px;
       background: rgba(56, 189, 248, 0.12);
       border: 2px solid var(--accent);
       cursor: pointer;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--text-main);
+      max-width: 180px;
+    }
+
+    .player-badge span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .player-badge.frame-gold {
@@ -127,32 +148,41 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 14px;
+      padding: 6px 12px;
       border-radius: 12px;
       background: rgba(251, 191, 36, 0.16);
       border: 1px solid rgba(251, 191, 36, 0.45);
       color: var(--gold);
       font-weight: 700;
+      font-size: 0.88rem;
       cursor: pointer;
+      white-space: nowrap;
       transition: transform 0.2s ease;
     }
 
     .coin-badge.bump {
-      transform: scale(1.12);
+      transform: scale(1.1);
     }
 
     button {
       border: none;
       border-radius: 10px;
-      padding: 8px 14px;
+      padding: 8px 13px;
       font-weight: 600;
+      font-size: 0.86rem;
       cursor: pointer;
+      white-space: nowrap;
       transition: opacity 0.2s ease, transform 0.15s ease;
     }
 
-    button:hover {
+    button:hover:not(:disabled) {
       opacity: 0.92;
       transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
     }
 
     .btn-secondary {
@@ -172,17 +202,18 @@
     }
 
     .main-grid {
-      max-width: 1160px;
+      width: 100%;
+      max-width: 1240px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1.15fr 1fr;
-      gap: 24px;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: clamp(14px, 2vw, 24px);
       align-items: start;
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
       .main-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
@@ -192,100 +223,117 @@
       border: 1px solid var(--panel-border);
       backdrop-filter: blur(12px);
       border-radius: 20px;
-      padding: 20px;
+      padding: clamp(12px, 1.8vw, 20px);
+      min-width: 0;
     }
 
     .tower-wrapper.festive {
-      box-shadow: 0 0 28px rgba(251, 191, 36, 0.25);
-      border-color: rgba(251, 191, 36, 0.5);
+      box-shadow: 0 0 28px rgba(251, 191, 36, 0.28);
+      border-color: rgba(251, 191, 36, 0.55);
     }
 
     .tower-roof {
       text-align: center;
       background: linear-gradient(90deg, #334155, #1e293b);
       color: #f8fafc;
-      padding: 10px;
+      padding: 8px 12px;
       border-radius: 14px 14px 4px 4px;
-      font-size: 0.85rem;
-      letter-spacing: 0.1em;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
       margin-bottom: 10px;
     }
 
     .tower-body {
       display: grid;
-      grid-template-columns: 1fr 78px;
+      grid-template-columns: minmax(0, 1fr) clamp(58px, 8vw, 82px);
       gap: 10px;
       background: var(--wall-bg);
-      padding: 12px;
+      padding: clamp(8px, 1.2vw, 12px);
       border-radius: 12px;
+      align-items: stretch;
     }
 
     .floors-column {
       display: flex;
       flex-direction: column-reverse;
       gap: 8px;
+      min-width: 0;
     }
 
     .floor-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 14px;
+      gap: 10px;
+      padding: clamp(9px, 1.2vw, 13px) clamp(10px, 1.4vw, 15px);
       border-radius: 12px;
-      background: rgba(15, 23, 42, 0.35);
+      background: rgba(15, 23, 42, 0.38);
       border: 1px solid rgba(255, 255, 255, 0.1);
       cursor: pointer;
+      min-height: 58px;
       transition: all 0.2s ease;
     }
 
     body.day-mode .floor-row {
-      background: rgba(255, 255, 255, 0.65);
-      border-color: rgba(15, 23, 42, 0.1);
+      background: rgba(255, 255, 255, 0.72);
+      border-color: rgba(15, 23, 42, 0.12);
     }
 
     .floor-row.active {
       border-color: var(--accent);
       box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
-      transform: translateX(4px);
     }
 
     .floor-row.floor2-gold {
       border-color: #fbbf24;
-      background: linear-gradient(90deg, rgba(251, 191, 36, 0.22), rgba(15, 23, 42, 0.35));
+      background: linear-gradient(90deg, rgba(251, 191, 36, 0.22), rgba(15, 23, 42, 0.38));
     }
 
     .floor-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .floor-left > div {
+      min-width: 0;
     }
 
     .floor-tag {
       font-weight: 800;
-      font-size: 0.95rem;
-      min-width: 36px;
+      font-size: 0.92rem;
+      min-width: 32px;
       color: var(--accent);
+      flex-shrink: 0;
     }
 
     .floor-title {
       font-weight: 700;
-      font-size: 0.98rem;
+      font-size: 0.96rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .floor-sub {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--text-sub);
       margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .windows {
       display: flex;
       gap: 5px;
+      flex-shrink: 0;
     }
 
     .win {
-      width: 14px;
-      height: 20px;
+      width: 12px;
+      height: 18px;
       border-radius: 3px;
       background: var(--window-dim);
     }
@@ -295,32 +343,38 @@
       box-shadow: 0 0 8px rgba(253, 230, 138, 0.5);
     }
 
-    /* 電梯井 */
+    @media (max-width: 520px) {
+      .windows {
+        display: none;
+      }
+    }
+
+    /* 電梯井：完全依樓層百分比自動定位 */
     .elevator-shaft {
       position: relative;
       background: rgba(15, 23, 42, 0.55);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 10px;
-      min-height: 360px;
-      padding: 8px;
+      min-height: 100%;
     }
 
     .elevator-car {
       position: absolute;
-      left: 8px;
-      right: 8px;
-      height: 54px;
+      left: 6px;
+      right: 6px;
+      height: 46px;
       border-radius: 8px;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       color: #0f172a;
       font-weight: 800;
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.45);
-      transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      line-height: 1.15;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.45);
+      transition: top 0.42s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     /* 右側資訊面板 */
@@ -329,10 +383,11 @@
       border: 1px solid var(--panel-border);
       backdrop-filter: blur(12px);
       border-radius: 20px;
-      padding: 22px;
+      padding: clamp(14px, 2vw, 22px);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+      min-width: 0;
     }
 
     .tags {
@@ -342,7 +397,7 @@
     }
 
     .tag {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       padding: 4px 10px;
       border-radius: 999px;
       background: rgba(56, 189, 248, 0.15);
@@ -354,19 +409,24 @@
       background: rgba(15, 23, 42, 0.25);
       border: 1px solid var(--panel-border);
       border-radius: 14px;
-      padding: 14px;
-      font-size: 0.9rem;
+      padding: 13px;
+      font-size: 0.88rem;
       line-height: 1.6;
     }
 
     body.day-mode .economy-box {
-      background: rgba(241, 245, 249, 0.85);
+      background: rgba(241, 245, 249, 0.88);
     }
 
     .action-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
+    }
+
+    .action-row > button {
+      white-space: normal;
+      text-align: center;
     }
 
     /* 彈窗 */
@@ -392,8 +452,8 @@
       color: #f8fafc;
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 18px;
-      padding: 22px;
-      max-height: 85vh;
+      padding: 20px;
+      max-height: 85dvh;
       overflow-y: auto;
     }
 
@@ -401,26 +461,34 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
     .shop-item {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       padding: 12px;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.05);
       margin-bottom: 10px;
     }
 
+    .shop-item > div {
+      flex: 1 1 200px;
+      min-width: 0;
+    }
+
     .log-item {
       display: flex;
       justify-content: space-between;
+      gap: 10px;
       padding: 8px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
     }
 
     input[type="text"] {
@@ -433,7 +501,7 @@
       margin: 10px 0 14px;
     }
 
-    /* 電梯過場動畫 */
+    /* 電梯前往過場 */
     .elevator-transition {
       position: fixed;
       inset: 0;
@@ -444,8 +512,10 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
+      padding: 20px;
+      text-align: center;
       z-index: 100;
-      font-size: 1.25rem;
+      font-size: clamp(1.05rem, 2vw, 1.3rem);
       font-weight: 700;
     }
 
@@ -482,7 +552,7 @@
       <div class="tower-roof">▲ ROOFTOP · 遊戲大樓觀景台 ▲</div>
       <div class="tower-body">
         <div id="floorsColumn" class="floors-column"></div>
-        <div class="elevator-shaft">
+        <div id="elevatorShaft" class="elevator-shaft">
           <div id="elevatorCar" class="elevator-car">
             <span>🛗</span>
             <span id="elevatorFloorText">2F</span>
@@ -494,7 +564,7 @@
     <aside class="inspector">
       <div>
         <div id="detailFloor" style="font-weight: 800; color: var(--accent); font-size: 0.95rem;">2F</div>
-        <h2 id="detailTitle" style="font-size: 1.5rem; margin-top: 2px;">拉密</h2>
+        <h2 id="detailTitle" style="font-size: clamp(1.25rem, 1.8vw, 1.55rem); margin-top: 2px;">拉密</h2>
       </div>
 
       <div id="detailTags" class="tags"></div>
@@ -506,13 +576,11 @@
     </aside>
   </main>
 
-  <!-- 電梯前往過場 -->
   <div id="elevatorOverlay" class="elevator-transition">
     <div>🛗 電梯前往 <span id="targetFloorLabel">2F</span> 中...</div>
     <div style="font-size: 0.9rem; color: #94a3b8;">正在準備遊戲畫面</div>
   </div>
 
-  <!-- 切換玩家彈窗 -->
   <div id="playerModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
@@ -527,7 +595,6 @@
     </div>
   </div>
 
-  <!-- 外觀商店彈窗 -->
   <div id="shopModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
@@ -539,7 +606,6 @@
     </div>
   </div>
 
-  <!-- 金幣明細彈窗 -->
   <div id="walletModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
@@ -794,24 +860,6 @@
         } else {
           await updateDoc(doc(db, "players", playerId), { equippedFrame: item.id });
         }
-      } else if (item.type === "floor2") {
-        const nextOwned = [...new Set([...(playerData.ownedItems || []), "floor2_gold"])];
-        if (!db || isOfflineMode) {
-          playerData.ownedItems = nextOwned;
-          saveLocalFallback();
-          renderAll();
-        } else {
-          await updateDoc(doc(db, "players", playerId), { ownedItems: nextOwned });
-        }
-      } else if (item.type === "tower") {
-        const nextOwned = [...new Set([...(playerData.ownedItems || []), "festive_tower"])];
-        if (!db || isOfflineMode) {
-          playerData.ownedItems = nextOwned;
-          saveLocalFallback();
-          renderAll();
-        } else {
-          await updateDoc(doc(db, "players", playerId), { ownedItems: nextOwned });
-        }
       }
     };
 
@@ -839,7 +887,6 @@
           currentFloorId = f.id;
           renderTower();
           renderInspector();
-          moveElevator(f.id);
         };
 
         row.innerHTML = `
@@ -858,16 +905,30 @@
         col.appendChild(row);
       });
 
-      moveElevator(currentFloorId);
+      requestAnimationFrame(() => moveElevator(currentFloorId));
     }
 
     function moveElevator(floorId) {
-      const idx = FLOORS.findIndex((f) => f.id === floorId);
+      const shaft = document.getElementById("elevatorShaft");
       const car = document.getElementById("elevatorCar");
       document.getElementById("elevatorFloorText").textContent = floorId;
-      const positions = [292, 200, 108, 16];
-      car.style.top = `${positions[idx] ?? 200}px`;
+      if (!shaft || !car) return;
+
+      const idx = Math.max(0, FLOORS.findIndex((f) => f.id === floorId));
+      const total = Math.max(1, FLOORS.length);
+      const shaftHeight = shaft.clientHeight;
+      const carHeight = car.offsetHeight || 46;
+      const pad = 8;
+      const usable = Math.max(0, shaftHeight - carHeight - pad * 2);
+      // 索引 0 為 1F 在最下方，索引最後為頂樓在最上方
+      const ratioFromTop = total === 1 ? 0 : 1 - idx / (total - 1);
+      const topPx = pad + usable * ratioFromTop;
+      car.style.top = `${Math.round(topPx)}px`;
     }
+
+    window.addEventListener("resize", () => {
+      moveElevator(currentFloorId);
+    });
 
     function renderInspector() {
       const floor = FLOORS.find((f) => f.id === currentFloorId) || FLOORS[1];
@@ -893,4 +954,122 @@
       if (floor.id === "1F") {
         const btn = document.createElement("button");
         btn.className = "btn-gold";
-        btn.textContent = "🎁 領取簽
+        btn.textContent = "🎁 領取簽到 +100 幣";
+        btn.onclick = window.claimDailyBonus;
+        actionsEl.appendChild(btn);
+      } else if (floor.open && floor.url) {
+        const btn = document.createElement("button");
+        btn.className = "btn-primary";
+        btn.textContent = floor.entryFee > 0 ? `🛗 付 ${floor.entryFee} 幣並搭乘電梯前往` : "🛗 搭乘電梯前往";
+        btn.onclick = () => window.enterFloor(floor.id);
+        actionsEl.appendChild(btn);
+      }
+    }
+
+    function renderShop() {
+      document.getElementById("shopCoins").textContent = playerData.coins;
+      const list = document.getElementById("shopList");
+      list.innerHTML = "";
+
+      SHOP_ITEMS.forEach((item) => {
+        const owned = (playerData.ownedItems || []).includes(item.id);
+        const equipped = item.type === "frame" && playerData.equippedFrame === item.id;
+
+        const div = document.createElement("div");
+        div.className = "shop-item";
+        div.innerHTML = `
+          <div>
+            <div style="font-weight:700;">${item.name}</div>
+            <div style="font-size:0.8rem;color:#94a3b8;">${item.desc}</div>
+            <div style="font-size:0.82rem;color:#fbbf24;margin-top:3px;">價格：🪙 ${item.price}</div>
+          </div>
+        `;
+
+        const btn = document.createElement("button");
+        if (equipped) {
+          btn.className = "btn-secondary";
+          btn.textContent = "已穿戴";
+          btn.disabled = true;
+        } else if (owned) {
+          btn.className = "btn-primary";
+          btn.textContent = item.type === "frame" ? "穿戴" : "已啟用";
+          btn.disabled = item.type !== "frame";
+          btn.onclick = () => window.buyOrEquip(item.id);
+        } else {
+          btn.className = "btn-gold";
+          btn.textContent = "購買";
+          btn.onclick = () => window.buyOrEquip(item.id);
+        }
+
+        div.appendChild(btn);
+        list.appendChild(div);
+      });
+    }
+
+    function renderWallet() {
+      document.getElementById("walletCoins").textContent = playerData.coins;
+      const list = document.getElementById("logList");
+      const logs = playerData.logs || [];
+      if (!logs.length) {
+        list.innerHTML = "<p style='color:#94a3b8;font-size:0.85rem;'>尚無收支紀錄</p>";
+        return;
+      }
+      list.innerHTML = logs.map((l) => `
+        <div class="log-item">
+          <span>[${l.floor}] ${l.reason} <small style="color:#94a3b8;">(${l.time})</small></span>
+          <strong style="color:${l.delta >= 0 ? "#34d399" : "#f87171"};">${l.delta >= 0 ? "+" : ""}${l.delta}</strong>
+        </div>
+      `).join("");
+    }
+
+    function renderAll() {
+      document.getElementById("playerNameLabel").textContent = playerId;
+      document.getElementById("coinBalance").textContent = playerData.coins;
+
+      const badge = document.getElementById("playerBadge");
+      badge.className = "player-badge";
+      if (playerData.equippedFrame === "frame_gold") badge.classList.add("frame-gold");
+      if (playerData.equippedFrame === "frame_neon") badge.classList.add("frame-neon");
+
+      renderTower();
+      renderInspector();
+      renderShop();
+      renderWallet();
+    }
+
+    window.openPlayerModal = function () {
+      document.getElementById("playerInput").value = playerId;
+      document.getElementById("playerModal").classList.add("open");
+    };
+
+    window.savePlayerId = function () {
+      const val = document.getElementById("playerInput").value.trim().toLowerCase();
+      if (!val) return;
+      playerId = val;
+      localStorage.setItem("gameTower_playerId", playerId);
+      closeModal("playerModal");
+      subscribePlayer();
+    };
+
+    window.openShopModal = function () {
+      renderShop();
+      document.getElementById("shopModal").classList.add("open");
+    };
+
+    window.openWalletModal = function () {
+      renderWallet();
+      document.getElementById("walletModal").classList.add("open");
+    };
+
+    window.closeModal = function (id) {
+      document.getElementById(id).classList.remove("open");
+    };
+
+    window.toggleDayNight = function () {
+      document.body.classList.toggle("day-mode");
+    };
+
+    subscribePlayer();
+  </script>
+</body>
+</html>
