@@ -687,6 +687,7 @@
       coins: 500,
       equippedFrame: "frame_default",
       ownedItems: ["frame_default"],
+      lastClaimDate: "",
       logs: [{ floor: "1F", reason: "歡迎來到遊戲世界大樓", delta: 500, time: "初始" }]
     };
 
@@ -718,6 +719,14 @@
       return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     }
 
+    function todayKey() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
     function loadLocalFallback() {
       const saved = localStorage.getItem(`tower_player_${playerId}`);
       if (saved) {
@@ -728,6 +737,7 @@
           coins: 500,
           equippedFrame: "frame_default",
           ownedItems: ["frame_default"],
+          lastClaimDate: "",
           logs: [{ floor: "1F", reason: "新玩家初始金幣", delta: 500, time: nowTime() }]
         };
       }
@@ -759,6 +769,7 @@
             coins: 0,
             equippedFrame: "frame_default",
             ownedItems: ["frame_default"],
+            lastClaimDate: "",
             logs: [],
             ...snap.data()
           };
@@ -772,6 +783,7 @@
             coins: 500,
             equippedFrame: "frame_default",
             ownedItems: ["frame_default"],
+            lastClaimDate: "",
             logs: [{ floor: "1F", reason: "建立雲端玩家帳號", delta: 500, time: nowTime() }]
           };
           await setDoc(ref, initial);
@@ -809,7 +821,22 @@
     }
 
     window.claimDailyBonus = async function () {
-      await mutateCoins(100, "1F", "每日簽到領取");
+      const today = todayKey();
+      if (playerData.lastClaimDate === today) {
+        alert("今天的簽到獎勵已經領過囉，明天再來領取！");
+        return;
+      }
+
+      const ok = await mutateCoins(100, "1F", "每日簽到領取");
+      if (!ok) return;
+
+      if (!db || isOfflineMode) {
+        playerData.lastClaimDate = today;
+        saveLocalFallback();
+        renderAll();
+      } else {
+        await updateDoc(doc(db, "players", playerId), { lastClaimDate: today });
+      }
     };
 
     window.enterFloor = async function (floorId) {
@@ -920,7 +947,6 @@
       const carHeight = car.offsetHeight || 46;
       const pad = 8;
       const usable = Math.max(0, shaftHeight - carHeight - pad * 2);
-      // 索引 0 為 1F 在最下方，索引最後為頂樓在最上方
       const ratioFromTop = total === 1 ? 0 : 1 - idx / (total - 1);
       const topPx = pad + usable * ratioFromTop;
       car.style.top = `${Math.round(topPx)}px`;
@@ -943,7 +969,7 @@
       if (!floor.open) {
         ecoEl.innerHTML = "此樓層目前尚未開放，未來新增小遊戲時會在此顯示入場費與獎勵。";
       } else if (floor.id === "1F") {
-        ecoEl.innerHTML = "<strong>大廳補給：</strong>每天可在這裡領取 100 遊戲幣，也能打開外觀商店打扮你的名牌與大樓。";
+        ecoEl.innerHTML = "<strong>大廳補給：</strong>每天可在這裡領取 100 遊戲幣（每日限領一次），也能打開外觀商店打扮你的名牌與大樓。";
       } else {
         ecoEl.innerHTML = `<strong>入場費用：</strong>${floor.entryFee} 幣<br/><strong>獎勵機制：</strong>${floor.rewardHint}`;
       }
@@ -952,9 +978,11 @@
       actionsEl.innerHTML = "";
 
       if (floor.id === "1F") {
+        const claimedToday = playerData.lastClaimDate === todayKey();
         const btn = document.createElement("button");
-        btn.className = "btn-gold";
-        btn.textContent = "🎁 領取簽到 +100 幣";
+        btn.className = claimedToday ? "btn-secondary" : "btn-gold";
+        btn.textContent = claimedToday ? "✅ 今日已簽到" : "🎁 領取簽到 +100 幣";
+        btn.disabled = claimedToday;
         btn.onclick = window.claimDailyBonus;
         actionsEl.appendChild(btn);
       } else if (floor.open && floor.url) {
